@@ -1,6 +1,8 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable } from "rxjs";
+import { delay, map } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 import {
   PostCollectionRequestData,
   PostCollectionResponseData
@@ -15,7 +17,8 @@ import {
   providedIn: 'root'
 })
 export class CollectionService {
-  private readonly apiUrl = 'http://localhost:3000/api/collections';
+  private readonly apiUrl = `${environment.apiBaseUrl}/collections`;
+  private readonly mockCollectionsUrl = 'assets/mock/collections.json';
 
   constructor(private http: HttpClient) {}
 
@@ -27,12 +30,32 @@ export class CollectionService {
 
   // 컬렉션 조회
   getCollections(): Observable<GetCollectionsResponseData[]> {
+    if (environment.demoMode) {
+      return this.http
+        .get<GetCollectionsResponseData[]>(this.mockCollectionsUrl)
+        .pipe(delay(environment.demoRequestDelayMs));
+    }
+
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.get<GetCollectionsResponseData[]>(`${this.apiUrl}?includeMovies=true`, { headers });
   }
 
   // 특정 컬렉션 조회 (ID로)
   getCollectionById(collectionId: number): Observable<GetCollectionsResponseData> {
+    if (environment.demoMode) {
+      return this.getCollections().pipe(
+        map((collections) => {
+          const collection = collections.find((item) => item.id === collectionId);
+
+          if (!collection) {
+            throw new Error(`Collection not found: ${collectionId}`);
+          }
+
+          return collection;
+        }),
+      );
+    }
+
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.get<GetCollectionsResponseData>(`${this.apiUrl}/${collectionId}`, { headers });
   }
@@ -61,9 +84,13 @@ export class CollectionService {
   }
 
   // 공유된 컬렉션 조회
-  getSharedCollections(): Observable<any[]> {
+  getSharedCollections(): Observable<GetCollectionsResponseData[]> {
+    if (environment.demoMode) {
+      return this.getCollections();
+    }
+
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.get<any[]>(`${this.apiUrl}/shared`, { headers });
+    return this.http.get<GetCollectionsResponseData[]>(`${this.apiUrl}/shared`, { headers });
   }
 
   // 컬렉션 공유

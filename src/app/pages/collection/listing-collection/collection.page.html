@@ -4,175 +4,92 @@
       color="light"
       show-clear-button="never"
       placeholder="찾고 싶은 컬렉션을 검색하세요!"
-      style="padding: 0 15px 15px 15px"
     ></ion-searchbar>
   </div>
 
-  <div class="popular">
-    <span>인기순</span>
-    <ion-icon name="caret-down-outline" style="margin-left: auto"></ion-icon>
-  </div>
+  <div class="hot">인기🔥</div>
 
-  <p class="hot">인기🔥</p>
+  <section
+    *ngIf="collectionLoadStatus === 'loading'"
+    aria-label="컬렉션을 불러오는 중"
+  >
+    <article *ngFor="let item of skeletonItems" class="collection-skeleton">
+      <div class="collection-skeleton-header">
+        <ion-skeleton-text animated class="avatar-skeleton"></ion-skeleton-text>
+        <ion-skeleton-text
+          animated
+          class="collection-title-skeleton"
+        ></ion-skeleton-text>
+      </div>
+      <div class="collection-skeleton-posters">
+        <ion-skeleton-text
+          animated
+          class="collection-poster-skeleton"
+        ></ion-skeleton-text>
+        <ion-skeleton-text
+          animated
+          class="collection-poster-skeleton"
+        ></ion-skeleton-text>
+        <ion-skeleton-text
+          animated
+          class="collection-poster-skeleton"
+        ></ion-skeleton-text>
+      </div>
+    </article>
+  </section>
 
-  <!-- 샘플 데이터 -->
-  <div class="christmas_movie">
-    <div class="header">
-      <img
-        class="unknow-image"
-        alt=""
-        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRU_ERNCSI1HFpbvGex7nWhFR-ZYtVQnhCjEhAr4ryvrDdMVUxiGCFvuYeY9hfiHYQfxpA&usqp=CAU"
-        style="width: 50px; height: auto"
-      />
-      <p>크리스마스에 생각나는 영화</p>
-      <ion-icon
-        name="chevron-forward-outline"
-        style="margin-left: auto; color: grey"
-        (click)="goToDetailCollectionPage(1)"
-      ></ion-icon>
-    </div>
-    <div class="movie-images">
-      <img
-        class="alone"
-        src="https://i.namu.wiki/i/yKCKWxSAUkSiQHdKyRckkA-miB0VZeIJcpgjtoYPcutixTS9IYbvpXpwD7TvmCIFEf5J52lSfXKFuJzH3UILLA.webp"
-        alt=""
-      />
-      <img
-        class="alone"
-        alt=""
-        src="https://m.media-amazon.com/images/M/MV5BOGEyYzRmNzYtYzJjZi00ZjhlLWJiNDktYzZhNTgxMzc1NThlXkEyXkFqcGc@._V1_.jpg"
-      />
-      <img
-        class="alone"
-        alt=""
-        src="https://m.media-amazon.com/images/M/MV5BNmI0MjcxYjYtYzY5Ni00NjBkLTllN2MtZGYyNzJiYzA5ZGYxXkEyXkFqcGc@._V1_.jpg"
-      />
-    </div>
-    <div class="likes" style="margin-top: 10px">
-      <ion-icon name="heart"></ion-icon>
-      <span>12</span>
-    </div>
-  </div>
+  <section
+    *ngIf="collectionLoadStatus === 'error'"
+    class="collection-state-message"
+    aria-live="polite"
+  >
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <p>{{ collectionLoadError }}</p>
+    <ion-button fill="outline" (click)="retryCollections()"
+      >다시 시도</ion-button
+    >
+  </section>
 
-  <div class="christmas_movie">
-    <div class="header">
-      <img
-        class="unknow-image"
-        alt=""
-        src="https://i0.wp.com/studiolorier.com/wp-content/uploads/2018/10/Profile-Round-Sander-Lorier.jpg?ssl=1"
-        style="width: 50px; height: auto"
-      />
-      <p>천만 돌파한 한국 영화는 뭐가 있을까?</p>
-      <ion-icon
-        name="chevron-forward-outline"
-        style="margin-left: auto; color: grey"
-        (click)="goToDetailCollectionPage(1)"
-      ></ion-icon>
-    </div>
-    <div class="movie-images">
-      <img
-        class="alone"
-        src="https://file2.nocutnews.co.kr/newsroom/image/2023/05/03/202305031010068401_0.jpg"
-        alt=""
-      />
-      <img
-        class="alone"
-        alt=""
-        src="https://upload.wikimedia.org/wikipedia/ko/7/76/%EC%84%9C%EC%9A%B8%EC%9D%98_%EB%B4%84_%ED%8F%AC%EC%8A%A4%ED%84%B0.jpg"
-      />
-      <img
-        class="alone"
-        alt=""
-        src="https://upload.wikimedia.org/wikipedia/ko/b/b9/%EB%B2%94%EC%A3%84%EB%8F%84%EC%8B%9C_2_%ED%8F%AC%EC%8A%A4%ED%84%B0.jpg"
-      />
-    </div>
-    <div class="likes" style="margin-top: 10px">
-      <ion-icon name="heart"></ion-icon>
-      <span>6</span>
-    </div>
-  </div>
+  <section
+    *ngIf="collectionLoadStatus === 'empty'"
+    class="collection-state-message"
+    aria-live="polite"
+  >
+    <ion-icon name="albums-outline"></ion-icon>
+    <p>표시할 컬렉션이 없습니다.</p>
+  </section>
 
-  <div class="christmas_movie">
-    <div class="header">
-      <img
-        class="unknow-image"
-        alt=""
-        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRU_ERNCSI1HFpbvGex7nWhFR-ZYtVQnhCjEhAr4ryvrDdMVUxiGCFvuYeY9hfiHYQfxpA&usqp=CAU"
-        style="width: 50px; height: auto"
-      />
-      <p>웹툰 원작 영화 컬렉션</p>
-      <ion-icon
-        name="chevron-forward-outline"
-        style="margin-left: auto; color: grey"
-        (click)="goToDetailCollectionPage(1)"
-      ></ion-icon>
-    </div>
-    <div class="movie-images">
-      <img
-        class="alone"
-        src="https://i.namu.wiki/i/cGUToIlFsURd9oSr-mb5zSnGQy29WLA0LgJtlcCWSYJhICUVNXFp3it6TlAjqMDYId1REVwoXFTtAl0K_e0uO3b8h7F4tnRF_uYrF8Ynkjmg835Lo2Ht3EqSvBMdtitzfVSWy9zfOd-0DSaZiZRgKw.webp"
-        alt=""
-      />
-      <img
-        class="alone"
-        alt=""
-        src="https://i.namu.wiki/i/4txNLXNVlnHqA-eEeajTYmCZiSxxe6QkBoO9EzbecMP1aQUB2T7f5qDcgsYF5VZ4bc_FJrXRbRuZS_tgnv7jYUT8ztLq5hsdZMwX1jVYERx5K_R0tDkgD5XpkGGTIxW7EsNwM9nN1u8-2TEqGlqrcw.webp"
-      />
-      <img
-        class="alone"
-        alt=""
-        src="https://i.namu.wiki/i/ja9zJDhRbQQTZerBQyKU2pfgadMDXHJEN_c5lKk0fxSY2kpv6aekDyuiT2n8-9h-yt9dJK5yCk0qZ1O5bfCffrJ82wBcDS-IwhxQPZbA9MF2DYIDk32cXx5s9u3LDBTwYBgmcW_oBvpQ7cJcnn5FOw.webp"
-      />
-    </div>
-    <div class="likes" style="margin-top: 10px">
-      <ion-icon name="heart"></ion-icon>
-      <span>10</span>
-    </div>
-  </div>
-
-  <!-- 공유된 컬렉션 -->
-  <div class="christmas_movie">
-    <ng-container *ngFor="let collection of sharedCollections$ | async">
+  <section *ngIf="collectionLoadStatus === 'success'">
+    <article *ngFor="let collection of collections" class="christmas_movie">
       <div class="header">
         <img
           class="unknow-image"
-          alt=""
           src="assets/images/unknown.png"
-          style="width: 50px; height: auto"
+          alt="사용자 프로필"
         />
-        <p class="collection-name" style="font-size: 22px">
-          {{ collection?.name }}
-        </p>
+        <p>{{ collection.name }}</p>
         <ion-icon
           class="arrow-icon"
           name="chevron-forward-outline"
           (click)="goToDetailCollectionPage(collection.id)"
-          style="margin-left: auto"
         ></ion-icon>
       </div>
 
-      <ion-item
-        (click)="viewDetail(collection.id)"
-        style="border: none; width: 100%; background: transparent"
-      >
-        <div class="collection-container" style="width: 100%">
-          <div class="poster-row">
-            <img
-              *ngFor="let movie of collection.movies"
-              [src]="movie.posterUrl"
-              alt="Movie Poster"
-              class="poster-image"
-            />
-          </div>
-        </div>
-      </ion-item>
+      <div class="poster-row" (click)="viewDetail(collection.id)">
+        <img
+          *ngFor="let movie of collection.movies"
+          [src]="movie.posterUrl"
+          [alt]="movie.title + ' 포스터'"
+          class="poster-image"
+        />
+      </div>
 
-      <div class="likes" style="margin-top: 10px">
+      <div class="likes">
         <ion-icon name="heart"></ion-icon>
         <span>{{ collection.favoriteCount }}</span>
       </div>
-    </ng-container>
-  </div>
+    </article>
+  </section>
 
   <ion-fab slot="fixed" vertical="bottom" horizontal="end">
     <ion-fab-button>

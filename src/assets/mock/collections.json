@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "크리스마스에 생각나는 영화",
+    "like": 12,
+    "movies": [
+      { "id": "1", "title": "나 홀로 집에", "posterUrl": "assets/images/movie1.webp" },
+      { "id": "2", "title": "해리 포터와 마법사의 돌", "posterUrl": "assets/images/movie2.webp" },
+      { "id": "3", "title": "해리 포터와 비밀의 방", "posterUrl": "assets/images/movie3.webp" }
+    ],
+    "createdAt": "2024-12-01T00:00:00.000Z",
+    "modifiedAt": "2024-12-01T00:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "주말에 몰아보기 좋은 영화",
+    "like": 8,
+    "movies": [
+      { "id": "4", "title": "베테랑 2", "posterUrl": "assets/images/movie4.webp" },
+      { "id": "5", "title": "겨울의 초대", "posterUrl": "assets/images/movie5.jpg" },
+      { "id": "6", "title": "마법의 귀환", "posterUrl": "assets/images/movie6.jpg" }
+    ],
+    "createdAt": "2024-12-02T00:00:00.000Z",
+    "modifiedAt": "2024-12-02T00:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "name": "판타지 세계로 떠나는 밤",
+    "like": 10,
+    "movies": [
+      { "id": "2", "title": "해리 포터와 마법사의 돌", "posterUrl": "assets/images/movie2.webp" },
+      { "id": "3", "title": "해리 포터와 비밀의 방", "posterUrl": "assets/images/movie3.webp" },
+      { "id": "6", "title": "마법의 귀환", "posterUrl": "assets/images/movie6.jpg" }
+    ],
+    "createdAt": "2024-12-03T00:00:00.000Z",
+    "modifiedAt": "2024-12-03T00:00:00.000Z"
+  }
+]

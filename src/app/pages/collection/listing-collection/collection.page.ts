@@ -11,7 +11,14 @@ import {
 } from 'ionicons/icons';
 import { CollectionService } from 'src/app/services/collection/collection.service';
 import { tap } from 'rxjs/operators';
-import { NavController } from '@ionic/angular';
+import { NavController, ToastController } from '@ionic/angular';
+import { AsyncStatus } from 'src/app/models/common/async-status.type';
+import { GetCollectionsResponseData } from 'src/app/models/collection/collection-getcollections.interface.data';
+
+interface CollectionListItem extends GetCollectionsResponseData {
+  isFavorite: boolean;
+  favoriteCount: number;
+}
 
 @Component({
   selector: 'app-collection',
@@ -19,38 +26,70 @@ import { NavController } from '@ionic/angular';
   styleUrls: ['./collection.page.scss'],
 })
 export class CollectionPage implements OnInit {
-  collections: any[] = [];
+  readonly skeletonItems = [1, 2, 3];
+  collections: CollectionListItem[] = [];
+  collectionLoadStatus: AsyncStatus = 'idle';
+  collectionLoadError = '';
   sharedCollections$ = this.collectionService.getSharedCollections();
 
   constructor(
     private router: Router,
     private collectionService: CollectionService,
-    private navController: NavController
+    private navController: NavController,
+    private toastController: ToastController,
   ) {
     addIcons({ chevronDownCircle, chevronForwardCircle, chevronUpCircle, colorPalette, document, globe });
   }
 
   ngOnInit() {
     this.loadCollections();
-    this.sharedCollections$ = this.collectionService.getSharedCollections();
   }
 
-  loadCollections() {
-    this.collectionService.getCollections().subscribe(
-      (collections: any[]) => {
+  loadCollections(): void {
+    this.collectionLoadStatus = 'loading';
+    this.collectionLoadError = '';
+
+    this.collectionService.getCollections().subscribe({
+      next: (collections: GetCollectionsResponseData[]) => {
         this.collections = collections.map((collection) => ({
           ...collection,
-          isFavorite: collection.isFavorite || false, // 초기값 설정
-          favoriteCount: collection.favoriteCount || 0, // 초기값 설정
+          isFavorite: false,
+          favoriteCount: collection.like || 0,
         }));
+
+        this.collectionLoadStatus = this.collections.length > 0 ? 'success' : 'empty';
       },
-      (error) => {
+      error: (error: unknown) => {
         console.error('컬렉션 로딩 실패:', error);
-      }
-    );
+        this.collectionLoadStatus = 'error';
+        this.collectionLoadError = '컬렉션을 불러오지 못했습니다.';
+        void this.presentLoadErrorToast();
+      },
+    });
   }
 
-  toggleFavorite(collection: any) {
+  retryCollections(): void {
+    this.loadCollections();
+  }
+
+  private async presentLoadErrorToast(): Promise<void> {
+    const toast = await this.toastController.create({
+      message: this.collectionLoadError,
+      duration: 3000,
+      color: 'danger',
+      position: 'bottom',
+      buttons: [
+        {
+          text: '재시도',
+          handler: () => this.retryCollections(),
+        },
+      ],
+    });
+
+    await toast.present();
+  }
+
+  toggleFavorite(collection: CollectionListItem): void {
     collection.isFavorite = !collection.isFavorite;
     collection.favoriteCount += collection.isFavorite ? 1 : -1;
 
@@ -73,7 +112,7 @@ export class CollectionPage implements OnInit {
   }
 
   goToDetailCollectionPage(id: number) {
-    this.router.navigate([`collection/detail-collection/${id}`]);
+    this.router.navigate(['/detail-collection', id]);
   }
 
   shareCollection(collectionId: number) {
