@@ -186,7 +186,7 @@
         <swiper-slide *ngFor="let movie of moviesGroupedByGenre[genre]">
           <div class="movie-items">
             <img [src]="movie.posterUrl" class="movie-poster">
-            <div class="movie_name">{{ movie.movietitle }}</div>
+            <div class="movie_name">{{ movie.title }}</div>
           </div>
         </swiper-slide>
       </swiper-container>

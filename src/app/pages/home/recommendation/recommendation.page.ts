@@ -7,18 +7,7 @@ import { GetMovieByIdResponseData } from 'src/app/models/movie/movie-getmoviebyi
 import { jwtDecode } from 'jwt-decode';
 import { GetUserResponseData } from 'src/app/models/user/user-getuser-response.data.interface';
 import { UserService } from 'src/app/services/user/user.service';
-
-interface LikedMovie {
-  movieId: number;
-  movietitle: string;
-  posterUrl: string;
-}
-interface Movie{
-  movieId:number;
-  movietitle: string;
-  posterUrl: string;
-
-}
+import { Movie, MoviePreview, MoviesByGenre } from 'src/app/models/movie/movie.interface';
 
 @Component({
   selector: 'app-recommendation',
@@ -29,10 +18,10 @@ export class RecommendationPage implements OnInit {
   isLoggedIn: boolean = false;
   user = { username: '', email: '' };
   nickname: string | null = null; // 사용자 닉네임
-  likedMovies: LikedMovie[] = [];
+  likedMovies: MoviePreview[] = [];
   movies: Movie[] = []; // movies 속성 추가
   selectedMovies: Movie[] = []; // 사용자가 선택한 영화 목록
-  moviesGroupedByGenre: { [key: string]: Movie[] } = {}; // 장르별로 그룹화된 영화 데이터
+  moviesGroupedByGenre: MoviesByGenre = {}; // 장르별로 그룹화된 영화 데이터
   Object = Object; // Object를 템플릿에서 사용할 수 있도록 추가
   genres: string[] = []; // 장르 키 배열 추가
 
@@ -141,8 +130,8 @@ export class RecommendationPage implements OnInit {
     this.movieService.getMovieById(movieId.toString()).subscribe({
       next: (movie: GetMovieByIdResponseData) => {
         this.likedMovies.push({
-          movieId: parseInt(movie.id, 10),
-          movietitle: movie.title || '제목 없음',
+          id: movie.id,
+          title: movie.title || '제목 없음',
           posterUrl: movie.posterUrl || '/assets/default-poster.jpg',
         });
         console.log('Liked Movies:', this.likedMovies);
@@ -163,17 +152,13 @@ export class RecommendationPage implements OnInit {
     this.movieService.getMovies().subscribe({
       next: (response) => {
         if (response && response.length > 0) {
-          const groupedByGenre: { [key: string]: Movie[] } = {};
+          const groupedByGenre: MoviesByGenre = {};
           response.forEach((movie) => {
             const genre = movie.genre || '기타';
             if (!groupedByGenre[genre]) {
               groupedByGenre[genre] = [];
             }
-            groupedByGenre[genre].push({
-              movieId: parseInt(movie.id, 10),
-              movietitle: movie.title,
-              posterUrl: movie.posterUrl || 'assets/default-poster.jpg',
-            });
+            groupedByGenre[genre].push(movie);
           });
   
           this.moviesGroupedByGenre = groupedByGenre;
@@ -190,7 +175,7 @@ export class RecommendationPage implements OnInit {
   }
   
   toggleMovieSelection(movie: Movie) {
-    const index = this.selectedMovies.findIndex((m) => m.movieId === movie.movieId);
+    const index = this.selectedMovies.findIndex((item) => item.id === movie.id);
     if (index > -1) {
       this.selectedMovies.splice(index, 1); // 이미 선택된 영화라면 선택 해제
     } else {
@@ -199,7 +184,7 @@ export class RecommendationPage implements OnInit {
   }
   
   isSelected(movie: Movie): boolean {
-    return this.selectedMovies.some((m) => m.movieId === movie.movieId);
+    return this.selectedMovies.some((item) => item.id === movie.id);
   }
   
   goToShowRecommendedGenre() {
@@ -234,7 +219,7 @@ export class RecommendationPage implements OnInit {
     console.log('Finding genre for movie:', movie);
   
     const foundGenre = Object.keys(this.moviesGroupedByGenre).find((genre) =>
-      this.moviesGroupedByGenre[genre].some((m) => m.movieId === movie.movieId)
+      this.moviesGroupedByGenre[genre].some((item) => item.id === movie.id)
     );
   
     console.log('Found genre:', foundGenre);

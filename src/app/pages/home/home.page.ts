@@ -3,12 +3,7 @@ import { Router, ActivatedRoute } from "@angular/router";
 import { MovieService } from "../../services/movie/movie.service";
 import { GetMoviesResponseData } from "../../models/movie/movie-getmovie-response-data.interface";
 import { environment } from "../../../environments/environment";
-
-interface Movie {
-  movieId: number;
-  movietitle: string;
-  posterUrl: string;
-}
+import { MoviesByGenre } from "../../models/movie/movie.interface";
 
 @Component({
   selector: 'app-home',
@@ -28,7 +23,7 @@ export class HomePage implements AfterViewInit {
   movies: GetMoviesResponseData[] = [];
   recommendedMovies: GetMoviesResponseData[] = []; // 추천 영화 데이터
   genres: string[] = [];
-  moviesGroupedByGenre: { [key: string]: Movie[] } = {};
+  moviesGroupedByGenre: MoviesByGenre = {};
 
 
   toggleChatbotModal() {
@@ -124,18 +119,14 @@ export class HomePage implements AfterViewInit {
   }
 // 영화 데이터를 장르별로 그룹화
   groupMoviesByGenre(movies: GetMoviesResponseData[]) {
-    const groupedByGenre: { [key: string]: Movie[] } = {};
+    const groupedByGenre: MoviesByGenre = {};
 
     movies.forEach((movie) => {
       const genre = movie.genre || '기타';
       if (!groupedByGenre[genre]) {
         groupedByGenre[genre] = [];
       }
-      groupedByGenre[genre].push({
-        movieId: parseInt(movie.id, 10),
-        movietitle: movie.title,
-        posterUrl: movie.posterUrl || 'assets/default-poster.jpg',
-      });
+      groupedByGenre[genre].push(movie);
     });
 
     this.moviesGroupedByGenre = groupedByGenre;

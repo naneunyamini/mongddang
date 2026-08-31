@@ -13,8 +13,8 @@
         (click)="toggleMovieSelection(movie)"
         [class.selected]="isSelected(movie)"
       >
-        <img [src]="movie.posterUrl" alt="{{ movie.movietitle }}" />
-        <div class="movie-title">{{ movie.movietitle }}</div>
+        <img [src]="movie.posterUrl" alt="{{ movie.title }}" />
+        <div class="movie-title">{{ movie.title }}</div>
       </div>
     </div>
   </div>
