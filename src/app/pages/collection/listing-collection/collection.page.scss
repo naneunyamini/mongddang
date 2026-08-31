@@ -47,8 +47,8 @@ ion-header {
 }
 
 .poster-image {
-  width: 120px; 
-  height: auto;
+  width: 120px;
+  height: 180px;
   border-radius: 4px;
   object-fit: cover;
 }
@@ -95,7 +95,8 @@ ion-header {
 
 .alone {
   width: 120px;
-  height: auto;
+  height: 180px;
+  object-fit: cover;
   margin: 5px;
   border-radius: 8px;
 }

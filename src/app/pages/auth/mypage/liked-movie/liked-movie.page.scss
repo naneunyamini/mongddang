@@ -49,7 +49,7 @@
 
 .poster {
   width: 90px; /* 원하는 포스터 크기로 조정 */
-  height: auto; /* 원본 비율 유지 */
+  height: 135px;
   object-fit: cover; /* 이미지 크기 조절 */
   border-radius: 5px;
 }
@@ -92,6 +92,5 @@ ion-back-button {
   color: #db4a2b;
   margin-left: 9px;
 }
-
 
 
