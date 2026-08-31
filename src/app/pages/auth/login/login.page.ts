@@ -30,8 +30,8 @@ export class LoginPage {
     this.authService.login(signInRequestData).subscribe({
       next: (response) => {
         if (response.success) {
-          // 로그인 성공 시 마이페이지로 이동
-          this.router.navigate(['/mypage']);
+          // 데모 인증 완료 후 Mock 영화가 표시되는 홈으로 이동
+          this.router.navigate(['/home']);
         } else {
           // 크롬 경고창으로 로그인 실패 메시지 표시
           window.alert(response.message); // 사용자 친화적인 오류 메시지 표시

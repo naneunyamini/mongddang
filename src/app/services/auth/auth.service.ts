@@ -9,6 +9,8 @@ import axios from 'axios'; // axios 모듈 임포트
 import { jwtDecode } from 'jwt-decode'; // jwt-decode 모듈 임포트
 import { UserService } from '../user/user.service'; // UserService 임포트
 import { GetUserResponseData } from 'src/app/models/user/user-getuser-response.data.interface';
+import { environment } from 'src/environments/environment';
+import { LocalAuthService } from './local-auth.service';
 
 export interface User {
   id: string;
@@ -20,7 +22,7 @@ export interface User {
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly apiUrl = 'http://localhost:3000/api/auth';
+  private readonly apiUrl = `${environment.apiBaseUrl}/auth`;
   public user: User | null = null;
 
   // 로그인 상태를 관리하는 BehaviorSubject
@@ -29,7 +31,8 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private userService: UserService // UserService 주입
+    private userService: UserService,
+    private localAuthService: LocalAuthService,
   ) {
     this.initializeUser(); // 서비스 초기화 시 사용자 정보 설정
   }
@@ -39,6 +42,11 @@ export class AuthService {
   }
 
   public initializeUser() {
+    if (environment.demoMode) {
+      this.user = this.localAuthService.getSessionUser();
+      return;
+    }
+
     const userId = this.getUserIdFromToken();
     
     if (userId) {
@@ -71,9 +79,13 @@ export class AuthService {
   }
 
   login(data: SignInRequestData): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/signin`, data, {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-    }).pipe(
+    const loginRequest = environment.demoMode
+      ? this.localAuthService.login(data)
+      : this.http.post<AuthResponse>(`${this.apiUrl}/signin`, data, {
+          headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+        });
+
+    return loginRequest.pipe(
       tap(response => {
         if (response.success && response.data) {
           this.user = {
@@ -82,24 +94,7 @@ export class AuthService {
             email: response.data.user.email,
           };
   
-          localStorage.setItem('token', response.data.token); // 토큰 저장
-          const isFirstLogin = localStorage.getItem('isFirstLogin') === 'true';
-          const recommendationShown = localStorage.getItem('recommendationShown') === 'true';
-  
-          console.log('isFirstLogin:', isFirstLogin);
-          console.log('recommendationShown:', recommendationShown);
-  
-          if (isFirstLogin && !recommendationShown) {
-            // 추천 페이지를 첫 로그인 시 한 번만 표시
-            console.log('추천 페이지로 이동합니다.');
-            localStorage.setItem('recommendationShown', 'true');
-            localStorage.removeItem('isFirstLogin');
-            this.router.navigate(['/recommendation']);
-          } else {
-            console.log('홈 페이지로 이동합니다.');
-            this.router.navigate(['/home']);
-          }
-  
+          localStorage.setItem('token', response.data.token);
           this.loggedInSubject.next(true);
         }
       }),
@@ -117,15 +112,13 @@ export class AuthService {
   
   
   signUp(data: SignUpRequestData): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/signup`, data, {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-    }).pipe(
-      tap(response => {
-        if (response.success && response.data) {
-          console.log('회원가입 성공. isFirstLogin 설정');
-          localStorage.setItem('isFirstLogin', 'true'); // 첫 로그인 플래그 설정
-        }
-      }),
+    const signUpRequest = environment.demoMode
+      ? this.localAuthService.signUp(data)
+      : this.http.post<AuthResponse>(`${this.apiUrl}/signup`, data, {
+          headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+        });
+
+    return signUpRequest.pipe(
       catchError(error => {
         console.error('회원가입 오류:', error);
         return of({
@@ -140,6 +133,13 @@ export class AuthService {
   
   
   logOut(): Observable<any> {
+    if (environment.demoMode) {
+      this.clearUserData();
+      this.loggedInSubject.next(false);
+      this.router.navigate(['/auth/login']);
+      return of({ success: true });
+    }
+
     return this.http.post(`${this.apiUrl}/logout`, {}).pipe(
       tap(() => {
         this.clearUserData();
@@ -186,10 +186,17 @@ export class AuthService {
 
   private clearUserData(): void {
     localStorage.removeItem('token');
+    if (environment.demoMode) {
+      this.localAuthService.clearSession();
+    }
     this.user = null;
   }
 
   public isLoggedIn(): boolean {
+    if (environment.demoMode) {
+      return !!this.localAuthService.getSessionUser();
+    }
+
     return !!this.extractToken();
   }
 
