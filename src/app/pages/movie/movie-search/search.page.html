@@ -4,27 +4,42 @@
     show-cancel-button="never"
     cancel-button-text="취소"
     placeholder="검색어를 입력하세요"
-    style="margin-top: 50px; padding: 0 15px 15px 15px;"
+    style="margin-top: 50px; padding: 0 15px 15px 15px"
     [(ngModel)]="searchTerm"
-    (keyup.enter)="searchMovies()">
+    (keyup.enter)="searchMovies()"
+  >
   </ion-searchbar>
 
-  <div *ngIf="searchTerm">
-    <p class="Number-of-search-results" *ngIf="searchResults.length > 0">{{ searchResults.length }}건의 검색 결과</p>
+  <div *ngIf="searchTerm" class="search">
+    <p class="Number-of-search-results" *ngIf="searchResults.length > 0">
+      {{ searchResults.length }}건의 검색 결과
+    </p>
     <p *ngIf="searchResults.length === 0">검색 결과가 없습니다.</p>
   </div>
 
   <div *ngIf="searchTerm && searchResults.length > 0" class="movie-grid">
-    <div class="movie-item" *ngFor="let result of searchResults" (click)="goToMovieDetail(result.title)">
-      <img [src]="result.posterUrl" alt="{{ result.title }}" class="movie-poster" />
+    <div
+      class="movie-item"
+      *ngFor="let result of searchResults"
+      (click)="goToMovieDetail(result.title)"
+    >
+      <img
+        [src]="result.posterUrl"
+        alt="{{ result.title }}"
+        class="movie-poster"
+      />
       <p class="movie-title">{{ result.title }}</p>
     </div>
   </div>
 
   <div *ngIf="!searchTerm && data.length > 0">
     <ion-list>
-      <ion-item *ngFor="let movie of data" (click)="goToMovieDetail(movie.title)">
-        {{ movie.title }} <!-- 일반 텍스트로 영화 제목 표시 -->
+      <ion-item
+        *ngFor="let movie of data"
+        (click)="goToMovieDetail(movie.title)"
+      >
+        {{ movie.title }}
+        <!-- 일반 텍스트로 영화 제목 표시 -->
       </ion-item>
     </ion-list>
   </div>
