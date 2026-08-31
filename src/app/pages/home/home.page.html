@@ -48,9 +48,9 @@
   </div>
 
   <!-- 플로팅 챗봇 버튼 -->
-<ion-fab vertical="bottom" horizontal="end" slot="fixed">
-  <ion-fab-button>
-    <ion-icon (click)="navigateToChatbotPage()" name="chatbubbles-outline"></ion-icon>
+<ion-fab *ngIf="chatbotEnabled" vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab-button (click)="navigateToChatbotPage()">
+    <ion-icon name="chatbubbles-outline"></ion-icon>
   </ion-fab-button>
 </ion-fab>
 
@@ -205,4 +205,3 @@
     </div>
   </div>
 </ion-content>
-

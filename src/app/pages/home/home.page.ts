@@ -2,6 +2,7 @@ import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute } from "@angular/router";
 import { MovieService } from "../../services/movie/movie.service";
 import { GetMoviesResponseData } from "../../models/movie/movie-getmovie-response-data.interface";
+import { environment } from "../../../environments/environment";
 
 interface Movie {
   movieId: number;
@@ -15,6 +16,7 @@ interface Movie {
   styleUrls: ['home.page.scss']
 })
 export class HomePage implements AfterViewInit {
+  readonly chatbotEnabled = environment.chatbotEnabled;
   @ViewChild('swiper_cgv') swiperRef_cgv!: ElementRef;
   @ViewChild('swiper_netflix') swiperRef_netflix!: ElementRef;
   @ViewChild('swiper_genre') swiperRef_genre!: ElementRef;
