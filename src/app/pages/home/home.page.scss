@@ -261,7 +261,19 @@ ion-thumbnail img {
   width: 100%;
   aspect-ratio: 2 / 3;
   object-fit: cover;
+  background: linear-gradient(90deg, #eeeeee 25%, #f7f7f7 50%, #eeeeee 75%);
+  background-size: 200% 100%;
+  animation: poster-loading 1.2s ease-in-out infinite;
   border-radius: 5px; /* 필요하면 둥근 모서리 */
+}
+
+@keyframes poster-loading {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 .rank {
@@ -408,5 +420,38 @@ ion-fab-button::part(native) {
   //overflow: auto; /* 스크롤을 허용 */
 }
 
+.movie-state {
+  padding: 16px;
+}
 
+.movie-content-hidden {
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
 
+.poster-skeleton {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 5px;
+}
+
+.title-skeleton {
+  width: 70%;
+  height: 14px;
+  margin-top: 10px;
+}
+
+.movie-state-message {
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #666;
+}
+
+.movie-state-message ion-icon {
+  font-size: 40px;
+}

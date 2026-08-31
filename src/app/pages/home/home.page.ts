@@ -1,30 +1,41 @@
-import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
-import { Router, ActivatedRoute } from "@angular/router";
-import { MovieService } from "../../services/movie/movie.service";
-import { GetMoviesResponseData } from "../../models/movie/movie-getmovie-response-data.interface";
-import { environment } from "../../../environments/environment";
-import { MoviesByGenre } from "../../models/movie/movie.interface";
+import {
+  Component,
+  AfterViewInit,
+  ViewChild,
+  ElementRef,
+  OnInit,
+} from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { ToastController } from '@ionic/angular';
+import { MovieService } from '../../services/movie/movie.service';
+import { GetMoviesResponseData } from '../../models/movie/movie-getmovie-response-data.interface';
+import { environment } from '../../../environments/environment';
+import { MoviesByGenre } from '../../models/movie/movie.interface';
+import { AsyncStatus } from '../../models/common/async-status.type';
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss']
+  styleUrls: ['home.page.scss'],
 })
-export class HomePage implements AfterViewInit {
+export class HomePage implements OnInit, AfterViewInit {
   readonly chatbotEnabled = environment.chatbotEnabled;
+  readonly skeletonItems = [1, 2, 3];
   @ViewChild('swiper_cgv') swiperRef_cgv!: ElementRef;
   @ViewChild('swiper_netflix') swiperRef_netflix!: ElementRef;
   @ViewChild('swiper_genre') swiperRef_genre!: ElementRef;
   @ViewChild('swiper_recommended') swiperRef_recommended!: ElementRef;
   @ViewChild('elementRef', { static: false }) elementRef!: ElementRef;
 
-   // 챗봇 모달 열림/닫힘 상태
-   isChatbotModalOpen: boolean = false;
+  // 챗봇 모달 열림/닫힘 상태
+  isChatbotModalOpen: boolean = false;
   movies: GetMoviesResponseData[] = [];
   recommendedMovies: GetMoviesResponseData[] = []; // 추천 영화 데이터
   genres: string[] = [];
   moviesGroupedByGenre: MoviesByGenre = {};
-
+  movieLoadStatus: AsyncStatus = 'idle';
+  movieLoadError = '';
+  private selectedGenre: string | null = null;
 
   toggleChatbotModal() {
     this.isChatbotModalOpen = !this.isChatbotModalOpen; // 모달 열기/닫기 토글
@@ -36,19 +47,16 @@ export class HomePage implements AfterViewInit {
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private movieService: MovieService) { }
+    private movieService: MovieService,
+    private toastController: ToastController,
+  ) {}
 
-    ngOnInit() {
-      this.getMovies(() => {
-        this.activatedRoute.queryParams.subscribe((params: { [key: string]: string }) => {
-          const selectedGenre = params['genre'] || localStorage.getItem('selectedGenre');
-          if (selectedGenre) {
-            console.log('Loading recommended movies for genre:', selectedGenre);
-            this.loadRecommendedMovies(selectedGenre);
-          }
-        });
-      });
-    }
+  ngOnInit(): void {
+    this.selectedGenre =
+      this.activatedRoute.snapshot.queryParamMap.get('genre') ||
+      localStorage.getItem('selectedGenre');
+    this.getMovies();
+  }
 
   ngAfterViewInit() {
     if (this.swiperRef_cgv && this.swiperRef_netflix) {
@@ -95,29 +103,67 @@ export class HomePage implements AfterViewInit {
     this.router.navigate(['search'], { state: { movies: this.movies } });
   }
 
-  getMovies(callback?: () => void) {
+  getMovies(): void {
+    this.movieLoadStatus = 'loading';
+    this.movieLoadError = '';
+
     this.movieService.getMovies().subscribe({
       next: (response: GetMoviesResponseData[]) => {
         this.movies = response;
-        console.log('Movies loaded:', this.movies);
 
-        // 영화 데이터를 장르별로 그룹화
-        this.groupMoviesByGenre(this.movies);
-
-        // 콜백 실행
-        if (callback) {
-          callback();
+        if (response.length === 0) {
+          this.moviesGroupedByGenre = {};
+          this.genres = [];
+          this.recommendedMovies = [];
+          this.movieLoadStatus = 'empty';
+          return;
         }
+
+        this.groupMoviesByGenre(this.movies);
+        if (this.selectedGenre) {
+          this.loadRecommendedMovies(this.selectedGenre);
+        }
+        this.movieLoadStatus = 'success';
       },
-      error: (err: any) => {
-        console.error('Error fetching movies:', err);
+      error: (error: unknown) => {
+        console.error('영화 목록을 불러오지 못했습니다.', error);
+        this.movieLoadStatus = 'error';
+        this.movieLoadError = '영화 정보를 불러오지 못했습니다.';
+        void this.presentLoadErrorToast();
       },
-      complete: () => {
-        console.log('Movie fetching complete');
-      }
     });
   }
-// 영화 데이터를 장르별로 그룹화
+
+  retryMovies(): void {
+    this.getMovies();
+  }
+
+  handlePosterError(event: Event): void {
+    const image = event.target as HTMLImageElement;
+    const fallbackUrl = 'assets/images/unknown.png';
+
+    if (!image.src.endsWith(fallbackUrl)) {
+      image.src = fallbackUrl;
+    }
+  }
+
+  private async presentLoadErrorToast(): Promise<void> {
+    const toast = await this.toastController.create({
+      message: this.movieLoadError,
+      duration: 3000,
+      color: 'danger',
+      position: 'bottom',
+      buttons: [
+        {
+          text: '재시도',
+          handler: () => this.retryMovies(),
+        },
+      ],
+    });
+
+    await toast.present();
+  }
+  // 영화 데이터를 장르별로 그룹화
   groupMoviesByGenre(movies: GetMoviesResponseData[]) {
     const groupedByGenre: MoviesByGenre = {};
 
@@ -131,9 +177,7 @@ export class HomePage implements AfterViewInit {
 
     this.moviesGroupedByGenre = groupedByGenre;
     this.genres = Object.keys(groupedByGenre); // 장르 키 배열 생성
-    console.log('Movies grouped by genre:', this.moviesGroupedByGenre);
   }
-
 
   goToMovieDetailPage(id: string) {
     if (id) {
@@ -143,7 +187,9 @@ export class HomePage implements AfterViewInit {
     }
   }
   goToRecommendationPage() {
-    this.router.navigate(['recommendation'], { state: { movies: this.movies } })
+    this.router.navigate(['recommendation'], {
+      state: { movies: this.movies },
+    });
   }
 
   goTochatbotPage() {
@@ -152,13 +198,14 @@ export class HomePage implements AfterViewInit {
 
   // 특정 장르의 추천 영화를 로드
   loadRecommendedMovies(genre: string) {
-    console.log('Filtering movies for genre:', genre);
     this.recommendedMovies = this.movies.filter(
-      (movie) => movie.genre?.trim() === genre.trim()
+      (movie) => movie.genre?.trim() === genre.trim(),
     );
 
-    console.log('Filtered recommended movies:', this.recommendedMovies);
-    localStorage.setItem('recommendedMovies', JSON.stringify(this.recommendedMovies));
+    localStorage.setItem(
+      'recommendedMovies',
+      JSON.stringify(this.recommendedMovies),
+    );
   }
   // 챗봇 페이지로 이동
   navigateToChatbotPage() {

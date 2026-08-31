@@ -6,6 +6,7 @@ export const environment = {
   production: false,
   apiBaseUrl: 'http://localhost:3000/api',
   demoMode: true,
+  demoRequestDelayMs: 800,
   chatbotEnabled: false,
   useMockMovies: true,
 };

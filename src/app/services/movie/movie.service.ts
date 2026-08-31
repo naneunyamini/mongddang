@@ -3,7 +3,7 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {GetMoviesResponseData} from "../../models/movie/movie-getmovie-response-data.interface";
 import {GetMovieByIdResponseData} from "../../models/movie/movie-getmoviebyid-response-data.interface";
-import {map} from "rxjs/operators";
+import {delay, map} from "rxjs/operators";
 import {environment} from "../../../environments/environment";
 
 @Injectable({
@@ -19,7 +19,9 @@ export class MovieService {
   // 영화 목록 조회
   getMovies(): Observable<GetMoviesResponseData[]> {
     if (environment.useMockMovies) {
-      return this.http.get<GetMoviesResponseData[]>(this.mockMoviesUrl);
+      return this.http
+        .get<GetMoviesResponseData[]>(this.mockMoviesUrl)
+        .pipe(delay(environment.demoRequestDelayMs));
     }
 
     const headers = new HttpHeaders({'Content-Type': 'application/json'});

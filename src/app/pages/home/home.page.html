@@ -144,7 +144,41 @@
   </div>
 
   <!-- 영화리스트 -->
-  <div>
+  <section
+    *ngIf="movieLoadStatus === 'loading'"
+    class="movie-state"
+    aria-label="영화 목록을 불러오는 중"
+  >
+    <ion-grid>
+      <ion-row>
+        <ion-col *ngFor="let item of skeletonItems" size="4">
+          <ion-skeleton-text animated class="poster-skeleton"></ion-skeleton-text>
+          <ion-skeleton-text animated class="title-skeleton"></ion-skeleton-text>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </section>
+
+  <section
+    *ngIf="movieLoadStatus === 'error'"
+    class="movie-state movie-state-message"
+    aria-live="polite"
+  >
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <p>{{ movieLoadError }}</p>
+    <ion-button fill="outline" (click)="retryMovies()">다시 시도</ion-button>
+  </section>
+
+  <section
+    *ngIf="movieLoadStatus === 'empty'"
+    class="movie-state movie-state-message"
+    aria-live="polite"
+  >
+    <ion-icon name="film-outline"></ion-icon>
+    <p>표시할 영화가 없습니다.</p>
+  </section>
+
+  <div [class.movie-content-hidden]="movieLoadStatus !== 'success'">
   <div class="movie">
     <p>박스오피스 순위 🏆</p>
     <swiper-container #swiper_cgv>
@@ -153,7 +187,12 @@
         (click)="goToMovieDetailPage(movie.id)"
       >
         <div class="movie-item">
-          <img [src]="movie.posterUrl" class="movie-poster" />
+          <img
+            [src]="movie.posterUrl"
+            [alt]="movie.title + ' 포스터'"
+            class="movie-poster"
+            (error)="handlePosterError($event)"
+          />
           <div class="rank">{{ i + 1 }}</div>
           <div class="movie_name">{{ movie.title }}</div>
         </div>
@@ -170,7 +209,12 @@
     </div>
     <swiper-container #swiper_recommended>
       <swiper-slide *ngFor="let movie of recommendedMovies" (click)="goToMovieDetailPage(movie.id)">
-        <img [src]="movie.posterUrl" class="movie-poster" />
+        <img
+          [src]="movie.posterUrl"
+          [alt]="movie.title + ' 포스터'"
+          class="movie-poster"
+          (error)="handlePosterError($event)"
+        />
         <div class="movie_name">{{ movie.title }}</div>
       </swiper-slide>
     </swiper-container>
@@ -185,7 +229,12 @@
       <swiper-container #swiper_genre [slidesPerView]="3">
         <swiper-slide *ngFor="let movie of moviesGroupedByGenre[genre]">
           <div class="movie-items">
-            <img [src]="movie.posterUrl" class="movie-poster">
+            <img
+              [src]="movie.posterUrl"
+              [alt]="movie.title + ' 포스터'"
+              class="movie-poster"
+              (error)="handlePosterError($event)"
+            >
             <div class="movie_name">{{ movie.title }}</div>
           </div>
         </swiper-slide>
@@ -197,7 +246,12 @@
       <swiper-container #swiper_netflix>
         <swiper-slide *ngFor="let movie of movies;" (click)="goToMovieDetailPage(movie.id)">
           <div class="movie-item">
-            <img [src]="movie.posterUrl" class="movie-poster">
+            <img
+              [src]="movie.posterUrl"
+              [alt]="movie.title + ' 포스터'"
+              class="movie-poster"
+              (error)="handlePosterError($event)"
+            >
             <div class="movie_name">{{ movie.title }}</div>
           </div>
         </swiper-slide>
