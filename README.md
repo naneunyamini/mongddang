@@ -6,7 +6,7 @@
 
 
 # 1️⃣ API 상태 기반 사용자 피드백 개선
-관련 이슈: #6
+[관련 이슈: #6](https://github.com/naneunyamini/mongddang/issues/6)
 
 ## 리팩토링 이유
 기존에는 API 요청 실패를 console.log나 alert()로 처리하고 있어, 사용자는 화면이 비어 있는 이유를 알기 어려웠습니다.
@@ -44,7 +44,7 @@
 - 영화와 컬렉션 화면이 공통된 상태 표현 방식을 사용하게 됐습니다.
 
 # 2️⃣ 온보딩 상태 관리 및 사용자 흐름 개선
-관련 이슈: Issue #8
+[관련 이슈: Issue #8](https://github.com/naneunyamini/mongddang/issues/8)
 
 ## 리팩토링 이유
 온보딩 완료 여부와 선택 장르를 판단하는 로직이 Recommendation, Home, Mypage 등 여러 컴포넌트에 분산되어 있었습니다.
